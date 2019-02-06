@@ -31,7 +31,7 @@ void setup() {
   #endif
 
   pixels.begin();
-  Serial.begin(9600);
+  Serial.begin(115200);
   while (!Serial);
 
   for(int pixelNumber = 0; pixelNumber < NUMPIXELS; pixelNumber++){
