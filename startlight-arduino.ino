@@ -19,6 +19,12 @@ uint32_t toInt(byte b) {
   converter.byte = b;
   return converter.integer;
 }
+
+uint32_t r = 0;
+uint32_t g = 0;
+uint32_t b = 0;
+uint32_t w = 255;
+
 void setup() {
   #if defined (__AVR_ATtiny85__)
     if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
@@ -28,15 +34,11 @@ void setup() {
   Serial.begin(9600);
   while (!Serial);
 
-  pixels.setPixelColor(0, 0, 0, 0, 255);
-  pixels.setPixelColor(1, 0, 0, 0, 255);
+  for(int pixelNumber = 0; pixelNumber < NUMPIXELS; pixelNumber++){
+    pixels.setPixelColor(pixelNumber, r, g, b, w);
+  }
   pixels.show();
 }
-
-uint32_t r = 0;
-uint32_t g = 0;
-uint32_t b = 0;
-uint32_t w = 255;
 
 void loop() {
   while (Serial.available() <= 0);
