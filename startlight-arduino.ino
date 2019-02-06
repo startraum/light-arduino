@@ -4,7 +4,7 @@
 #endif
 
 #define PIN            6
-#define NUMPIXELS      3
+#define NUMPIXELS      120
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRBW + NEO_KHZ800);
 
