@@ -42,10 +42,9 @@ void setup() {
 
 void loop() {
   while (Serial.available() <= 0);
-  byte mode[1];
-  Serial.readBytes(mode, 1);
+  byte mode = Serial.read();
 
-  switch (mode[0]) {
+  switch (mode) {
     case 0x00: {
       Serial.write(r);
       Serial.write(g);
@@ -55,13 +54,12 @@ void loop() {
     }
 
     case 0x01: {
-      byte color[4];
-      Serial.readBytes(color, 4);
+      while (Serial.available() <= 0);
 
-      r = toInt(color[0]);
-      g = toInt(color[1]);
-      b = toInt(color[2]);
-      w = toInt(color[3]);
+      r = toInt(Serial.read());
+      g = toInt(Serial.read());
+      b = toInt(Serial.read());
+      w = toInt(Serial.read());
       
       for(int pixelNumber = 0; pixelNumber < NUMPIXELS; pixelNumber++){
         pixels.setPixelColor(pixelNumber, r, g, b, w);
