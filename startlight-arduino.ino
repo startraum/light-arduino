@@ -3,10 +3,14 @@
   #include <avr/power.h>
 #endif
 
-#define PIN            6
-#define NUMPIXELS      120
+#define PIN1            5
+#define PIN2            6
+#define PIN3            7
+#define NUMPIXELS      240
 
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel pixels1 = Adafruit_NeoPixel(NUMPIXELS, PIN1, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel pixels2 = Adafruit_NeoPixel(NUMPIXELS, PIN2, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel pixels3 = Adafruit_NeoPixel(NUMPIXELS, PIN3, NEO_GRBW + NEO_KHZ800);
 
 union ArrayToInteger {
   byte byte;
@@ -30,14 +34,20 @@ void setup() {
     if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
   #endif
 
-  pixels.begin();
+  pixels1.begin();
+  pixels2.begin();
+  pixels3.begin();
   Serial.begin(115200);
   while (!Serial);
 
   for(int pixelNumber = 0; pixelNumber < NUMPIXELS; pixelNumber++){
-    pixels.setPixelColor(pixelNumber, r, g, b, w);
+    pixels1.setPixelColor(pixelNumber, r, g, b, w);
+    pixels2.setPixelColor(pixelNumber, r, g, b, w);
+    pixels3.setPixelColor(pixelNumber, r, g, b, w);
   }
-  pixels.show();
+  pixels1.show();
+  pixels2.show();
+  pixels3.show();
 }
 
 void loop() {
@@ -62,22 +72,42 @@ void loop() {
       g = toInt(color[1]);
       b = toInt(color[2]);
       w = toInt(color[3]);
-      
+
       for(int pixelNumber = 0; pixelNumber < NUMPIXELS; pixelNumber++){
-        pixels.setPixelColor(pixelNumber, r, g, b, w);
+        pixels1.setPixelColor(pixelNumber, r, g, b, w);
+        pixels2.setPixelColor(pixelNumber, r, g, b, w);
+        pixels3.setPixelColor(pixelNumber, r, g, b, w);
       }
-      pixels.show();
+      pixels1.show();
+      pixels2.show();
+      pixels3.show();
       break;
     }
 
     default: {
-      pixels.setPixelColor(0, 0, 0, 0, 0);
-      pixels.setPixelColor(1, 0, 0, 0, 0);
-      pixels.show();
+      pixels1.setPixelColor(0, 0, 0, 0, 0);
+      pixels2.setPixelColor(0, 0, 0, 0, 0);
+      pixels3.setPixelColor(0, 0, 0, 0, 0);
+
+      pixels1.setPixelColor(1, 0, 0, 0, 0);
+      pixels2.setPixelColor(1, 0, 0, 0, 0);
+      pixels3.setPixelColor(1, 0, 0, 0, 0);
+
+      pixels1.show();
+      pixels2.show();
+      pixels3.show();
+
       delay(5000);
-      pixels.setPixelColor(0, 0, 0, 0, 255);
-      pixels.setPixelColor(1, 0, 0, 0, 255);
-      pixels.show();
+      pixels1.setPixelColor(0, 0, 0, 0, 255);
+      pixels2.setPixelColor(0, 0, 0, 0, 255);
+      pixels3.setPixelColor(0, 0, 0, 0, 255);
+      pixels1.setPixelColor(1, 0, 0, 0, 255);
+      pixels2.setPixelColor(1, 0, 0, 0, 255);
+      pixels3.setPixelColor(1, 0, 0, 0, 255);
+
+      pixels1.show();
+      pixels2.show();
+      pixels3.show();
     }
   }
 }
