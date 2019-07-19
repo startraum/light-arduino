@@ -22,15 +22,18 @@ bool animationCheck() {
 }
 
 bool LED_AnimationChange(int animationSpeed) {
-  if (pixelCounter<3*PIXELNUM/2) {
+  if (pixelCounter<3*ElementVoxelNum/2) {
     for (int i=0; i<=animationSpeed; i++) {
       LED_setPixelColor_MAPPED(LEDDirection,pixelCounter+i,r,g,b,w);
     }
     LED_update_all();
+    //for (int i=0; i<=2;i++) {
+    //  LED_update(2*i);
+    //}
     pixelCounter=pixelCounter+animationSpeed+1;
     return true;
   }
-  if (pixelCounter>=3*PIXELNUM/2) {
+  if (pixelCounter>=3*ElementVoxelNum/2) {
     return false;
   }
 }
@@ -38,74 +41,109 @@ bool LED_AnimationChange(int animationSpeed) {
 
 
 bool LED_StaticChange(int r,int g,int b,int w) {                       //returns false, when the animation is completed
-        LED_staticColor_all(r,g,b,w);
+        LED_setSystemColor(r,g,b,w);
         LED_update_all();
         return false;
 }
 
+void newColor(int r1, int g1, int b1, int w1, int r2, int g2, int b2, int w2) {
+  animationRange[0]=r1;
+  animationRange[1]=g1;
+  animationRange[2]=b1;
+  animationRange[3]=w1;
+  animationRange[4]=r2;
+  animationRange[5]=g2;
+  animationRange[6]=b2;
+  animationRange[7]=w2;
+}
 
 
-//void startraum_wave_v1(int r1, int g1, int b1, int w1, int r2, int g2, int b2, int w2) {
-//  r=r+r_dir;
-//      g=g+g_dir;
-//      b=b+b_dir;
-//      w=w+w_dir;
-//      
-//  //    if (r<r1) {
-//  //      r=r1;
-//  //    }
-//  //    if (r>r2) {
-//  //      r=r2;
-//  //    }
-//      if ((r<=r1)||(r>=r2)) {
-//        r_dir=(-1)*r_dir;
-//      }
-//  //    if (g<g1) {
-//  //      g=g1;
-//  //    }
-//  //    if (g>g2) {
-//  //      g=g2;
-//  //    }
-//      if ((g<=g1)||(g>=g2)) {
-//        g_dir=(-1)*g_dir;
-//      }
-//  //    if (b<b1) {
-//  //      b=b1;
-//  //    }
-//  //    if (b>b2) {
-//  //      b=b2;
-//  //    }
-//      if ((b<=b1)||(b>=b2)) {
-//        b_dir=(-1)*b_dir;
-//      }
-//  //    if (w<w1) {
-//  //      w=w1;
-//  //    }
-//  //    if (w>w2) {
-//  //      w=w2;
-//  //    }
-//      if ((w<=w1)||(w>=w2)) {
-//        w_dir=(-1)*w_dir;
-//      }
-//      int l=i+wave_j;
-//      if (l>=3*PIXELNUM/2) {
-//        l=l-3*PIXELNUM/2;
-//      }
-//      LED_setPixelColor_MAPPED(1,l,r,g,b,w);
-//  LED_update_all();
-//  }
-  
+int nextColor(int colornumber, int c, int cmin, int cmax, int cdir) {
+    c=c+cdir;
+    if (c<cmin) {
+      c=cmin;
+    }
+    if (c>cmax) {
+      c=cmax;
+    }
+    if ((c==cmin)||(c==cmax)) {
+      cdir=(-1)*cdir;
+    }
+    switch (colornumber) {
+      case 1: {
+        r_dir=cdir;
+        break;
+      }
+      case 2: {
+        g_dir=cdir;
+        break;
+      }
+      case 3: {
+        b_dir=cdir;
+        break;
+      }
+      case 4: {
+        w_dir=cdir;
+        break;
+      }
+    }
+    return c;
+}
 
-void startraum_wave(int r1, int g1, int b1, int w1, int r2, int g2, int b2, int w2) {
-    r=r1;
-    g=g1;
-    b=b1;
-    w=w1;
+void startraum_wave_start() {
+  wave_r[0]=animationRange[0];
+  wave_g[0]=animationRange[1];
+  wave_b[0]=animationRange[2];
+  wave_w[0]=animationRange[3];
+  for (int i=1;i<ElementPixelNum*2;i++) {
+    wave_r[i]=nextColor(1, wave_r[i-1], animationRange[0], animationRange[4], r_dir);
+    wave_g[i]=nextColor(2, wave_g[i-1], animationRange[1], animationRange[5], g_dir);
+    wave_b[i]=nextColor(3, wave_b[i-1], animationRange[2], animationRange[6], b_dir);
+    wave_w[i]=nextColor(4, wave_w[i-1], animationRange[3], animationRange[7], w_dir);
+  }
+}
+
+void startraum_wave() {
+  for (int i=0;i<ElementPixelNum*2;i++) {
+    if (i<2*ElementVoxelNum) {
+      for (int e=0; e<3; e++) LED_setPixelColor(e, i, wave_r[i], wave_g[i], wave_b[i], wave_w[i]);
+    }
+    else {
+      for (int e=3; e<6; e++) LED_setPixelColor(e, (i-2*ElementVoxelNum), wave_r[i], wave_g[i], wave_b[i], wave_w[i]);
+    }
+    wave_r[i]=nextColor(1, wave_r[i], animationRange[0], animationRange[4], r_dir);
+    wave_g[i]=nextColor(2, wave_g[i], animationRange[1], animationRange[5], g_dir);
+    wave_b[i]=nextColor(3, wave_b[i], animationRange[2], animationRange[6], b_dir);
+    wave_w[i]=nextColor(4, wave_w[i], animationRange[3], animationRange[7], w_dir);
+  }
+  LED_update_all();
+  delay(10);
+}
+
+
+void animationChange() {
+  for (int i=0; i<ElementVoxelNum;i++) {
+    for (int e=0; e<3; e++) LED_setPixelColor(e, i, wave_r[i], wave_g[i], wave_b[i], wave_w[i]);
+    int j= 2*ElementVoxelNum-i-1;
+    for (int e=0; e<3; e++) LED_setPixelColor(e, j, wave_r[j], wave_g[j], wave_b[j], wave_w[j]);
+    LED_update_all();
+  }
+  for (int i=0; i<ElementVoxelNum;i++) {
+    int k= i+2*ElementVoxelNum;
+    for (int e=3; e<6; e++) LED_setPixelColor(e, i, wave_r[k], wave_g[k], wave_b[k], wave_w[k]);
+    int j= 4*ElementVoxelNum-i-1;
+    for (int e=3; e<6; e++) LED_setPixelColor(e, j-2*ElementVoxelNum, wave_r[j], wave_g[j], wave_b[j], wave_w[j]);
+    LED_update_all();
+  }
+
+}
+
+void startraum_collorchange_static(int r1, int g1, int b1, int w1, int r2, int g2, int b2, int w2) {
     r=r+r_dir;
     g=g+g_dir;
     b=b+b_dir;
     w=w+w_dir;
-    
+
    if (r<r1) {
       r=r1;
     }
@@ -142,59 +180,10 @@ void startraum_wave(int r1, int g1, int b1, int w1, int r2, int g2, int b2, int 
     if ((w==w1)||(w==w2)) {
       w_dir=(-1)*w_dir;
     }
-    LED_staticColor_all(r,g,b,w);
+    LED_setSystemColor(r,g,b,w);
   LED_update_all();
+  delay(20);
 }
-
-
-
-
-
-void startraum_Cycle(uint8_t wait) {
-  if ((rainbow_j<256)&&(rainbow_j>=128)) { // 5 cycles of all colors on wheel
-    for(byte i=0; i< DATA_LEDNUM;i++) {
-      NPLED1.setPixelColor(i, Wheel1(((i * 60 / DATA_LEDNUM) + rainbow_j) & 255));
-      NPLED2.setPixelColor(i, Wheel1(((i * 60 / DATA_LEDNUM) + rainbow_j) & 255));
-      NPLED3.setPixelColor(i, Wheel1(((i * 60 / DATA_LEDNUM) + rainbow_j) & 255));
-    }
-    rainbow_j=rainbow_j+rainbow_dir;
-    LED_update_all();
-    delay(wait);
-  }
-  else {
-    rainbow_dir=-rainbow_dir;
-    rainbow_j=255;
-  }
-}
-
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel1(byte WheelPos) {
-  WheelPos = 255 - WheelPos;
-  if(WheelPos < 85) {
-    return NPLED1.Color(0, 0, WheelPos * 3,0); //(255 - WheelPos * 3)
-  }
-  if(WheelPos < 170) {
-    WheelPos -= 85;
-    return NPLED1.Color(0, (WheelPos * 3)&150, 255 - WheelPos * 3,0);
-  }
-  WheelPos -= 170;
-  return NPLED1.Color(0, 255 - WheelPos * 3, 0,0);  //(WheelPos * 3)
-}
-
-uint32_t Wheel2(byte WheelPos) {
-  WheelPos = 255 - WheelPos;
-  if(WheelPos < 85) {
-    return NPLED1.Color(0, 0, WheelPos * 3,0); //(255 - WheelPos * 3)
-  }
-  if(WheelPos < 170) {
-    WheelPos -= 85;
-    return NPLED1.Color(0, (WheelPos * 3)&150, 255 - WheelPos * 3,0);
-  }
-  WheelPos -= 170;
-  return NPLED1.Color(0, 255 - WheelPos * 3, 0,0);  //(WheelPos * 3)
-}
-
 
 
 
@@ -202,7 +191,7 @@ uint32_t Wheel2(byte WheelPos) {
 //
 //void FASTLED_crossfadepalette() {
 //  ChangePalettePeriodically();
-// 
+//
 //  // nblendPaletteTowardPalette() will crossfade current palette slowly toward the target palette.
 //  //
 //  // Each time that nblendPaletteTowardPalette is called, small changes
@@ -213,7 +202,7 @@ uint32_t Wheel2(byte WheelPos) {
 //  //   - "0" means do not change the currentPalette at all; freeze
 //
 //  EVERY_N_MILLISECONDS(100) {
-//    uint8_t maxChanges = 30; 
+//    uint8_t maxChanges = 30;
 //    nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
 //  }
 //
@@ -227,7 +216,7 @@ uint32_t Wheel2(byte WheelPos) {
 //}
 //
 //void FillLEDsFromPaletteColors(uint8_t colorIndex) {
-//  
+//
 //  for(int i = 0; i < NUM_LEDS; i++) {
 //    FLED1[i] = ColorFromPalette(currentPalette, colorIndex + sin8(i*16), 255);
 //    FLED2[i] = ColorFromPalette(currentPalette, colorIndex + sin8(i*16), 255);
@@ -238,12 +227,12 @@ uint32_t Wheel2(byte WheelPos) {
 //} // FillLEDsFromPaletteColors()
 //
 //
-// 
+//
 //void ChangePalettePeriodically() {
-//  
+//
 //  uint8_t secondHand = (millis() / 1000) % 60;
 //  static uint8_t lastSecond = 99;
-//  
+//
 //  if(lastSecond != secondHand) {
 //    lastSecond = secondHand;
 //    CRGB p = CHSV(HUE_PURPLE, 255, 255);
@@ -257,6 +246,6 @@ uint32_t Wheel2(byte WheelPos) {
 //    if(secondHand == 40)  { targetPalette = CloudColors_p; }
 //    if(secondHand == 50)  { targetPalette = PartyColors_p; }
 //  }
-//  
+//
 //} // ChangePalettePeriodically()
-//        
+//
